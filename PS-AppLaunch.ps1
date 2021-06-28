@@ -94,17 +94,16 @@ sleep 5
 while ($true)
 {
   $ProcessCheck = Get-Process | Where-Object { $_.Name -eq $ProcessToCheck }
-  if ($Process_Check -eq $null)
+  if ($ProcessCheck -eq $null)
   {
     break
   }
 }
-
-start-process $AppCommandLine $AppCommandLineArgs
 
 # Closing splash-screen
 $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
 $Pwshell.EndInvoke($handle) | Out-Null
 $runspace.Close() | Out-Null
 
+start-process $AppCommandLine $AppCommandLineArgs
 exit 0
