@@ -89,8 +89,9 @@ $script:handle = $Pwshell.BeginInvoke()
 #Without 5 seconds of sleep, errors are thrown at closure
 sleep 5
 
-write-host $AppCommandLine $AppCommandLineArgs
-sleep 30
+start-process $AppCommandLine $AppCommandLineArgs
+#write-host $AppCommandLine $AppCommandLineArgs
+#sleep 30
 
 # Closing splash-screen
 $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
