@@ -22,6 +22,8 @@ param ($PublishedApp)
 # Initialize variables
 $AppCommandLine = "c:\NAV\finsqlr2.bat"
 $AppCommandLineArgs = '"SERVERNAME=L-EMEA-SQLPOTH2,database=NAV_O_SADBEL,ID=%ZUPFILES%\POTH2\BE-KI Sadbel - %USERNAME%.ZUP,ntauthentication=0,company=KLS -KTN Logistic Systems"'
+$ProcessToCheck = "wscript"
+
 $currentDir = [System.AppDomain]::CurrentDomain.BaseDirectory.TrimEnd('\')
 if ($currentDir -eq $PSHOME.TrimEnd('\'))
 {
@@ -89,9 +91,16 @@ $script:handle = $Pwshell.BeginInvoke()
 #Without 5 seconds of sleep, errors are thrown at closure
 sleep 5
 
+while ($true)
+{
+  $ProcessCheck = Get-Process | Where-Object { $_.Name -eq $ProcessToCheck }
+  if ($Process_Check -eq $null)
+  {
+    break
+  }
+}
+
 start-process $AppCommandLine $AppCommandLineArgs
-#write-host $AppCommandLine $AppCommandLineArgs
-#sleep 30
 
 # Closing splash-screen
 $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
