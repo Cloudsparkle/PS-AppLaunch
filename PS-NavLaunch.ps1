@@ -137,10 +137,22 @@ If ($IniFileExists -eq $true)
     }
   }
 
+  $SplashText = $IniFile["CONFIG"]["SplashText"]
+  if ($SplashText -eq $null)
+  {
+    $SplashText = "Getting ready..."
+  }
+
+  $SplashHeader = $IniFile["CONFIG"]["SplashHeader"]
+  if ($SplashHeader -eq $null)
+  {
+    $SplashHeader = "KTN Launchers"
+  }
+
   $AppCommandLine = $IniFile["LAUNCH"]["AppCommandLine"]
   if ($AppCommandLine -eq $null)
   {
-    $AppCommandLine = 0
+    $AppCommandLine = ""
   }
 
   $NAV_ServerName = $IniFile["LAUNCH"]["NAV_ServerName"]
@@ -223,7 +235,7 @@ $xml = [xml]@"
 
 		<Grid Grid.Row="0" x:Name="Header" >
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="20,10,0,0">
-				<Label Content="KTN App Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
+				<Label Content="KTN Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
 			</StackPanel>
 		</Grid>
         <Grid Grid.Row="1" >
@@ -269,11 +281,9 @@ $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
 $Pwshell.EndInvoke($handle) | Out-Null
 $runspace.Close() | Out-Null
 
-write-host $NAV_ServerName
-write-host $NAV_Database
-write-host $NAV_NAV_ID
-write-host $NAV_NTAUT
-write-host $NAV_Company
+$NAV_ID = $env:ZUPS+"\"+$env:username+".zup"
 
-#start-process $AppCommandLine $AppCommandLineArgs
+$AppCommandLineArgs = " SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
+#write-host $FullCommand
+start-process $AppCommandLine $AppCommandLineArgs
 exit 0
