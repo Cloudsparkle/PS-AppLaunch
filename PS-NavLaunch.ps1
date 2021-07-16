@@ -143,10 +143,34 @@ If ($IniFileExists -eq $true)
     $AppCommandLine = 0
   }
 
-  $AppCommandLineArgs = $IniFile["LAUNCH"]["AppCommandLineArgs"]
-  if ($AppCommandLineArgs -eq $null)
+  $NAV_ServerName = $IniFile["LAUNCH"]["NAV_ServerName"]
+  if ($NAV_ServerName -eq $null)
   {
-    $AppCommandLineArgs = 0
+    $NAV_ServerName = 0
+  }
+
+  $NAV_Database = $IniFile["LAUNCH"]["NAV_Database"]
+  if ($NAV_Database -eq $null)
+  {
+    $NAV_Database = 0
+  }
+
+  $NAV_NAV_ID = $IniFile["LAUNCH"]["NAV_ID"]
+  if ($NAV_ID -eq $null)
+  {
+    $NAV_ID = 0
+  }
+
+  $NAV_NTAUT = $IniFile["LAUNCH"]["NAV_NTAUT"]
+  if ($NAV_NTAUT -eq $null)
+  {
+    $NAV_NTAUT = 0
+  }
+
+  $NAV_Company = $IniFile["LAUNCH"]["NAV_Company"]
+  if ($NAV_Company -eq $null)
+  {
+    $NAV_Company = 0
   }
 
 }
@@ -245,5 +269,11 @@ $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
 $Pwshell.EndInvoke($handle) | Out-Null
 $runspace.Close() | Out-Null
 
-start-process $AppCommandLine $AppCommandLineArgs
+write-host $NAV_ServerName
+write-host $NAV_Database
+write-host $NAV_NAV_ID
+write-host $NAV_NTAUT
+write-host $NAV_Company
+
+#start-process $AppCommandLine $AppCommandLineArgs
 exit 0
