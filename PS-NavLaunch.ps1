@@ -1,25 +1,25 @@
 param ($PublishedAppIni)
 <#
 .SYNOPSIS
-
+  Starts Navision with a specific set of parameters
 .DESCRIPTION
-
+  Starts Navision based on parameters in a defined INI-file
 .PARAMETER PublishedAppIni
-
+  Ini file name0
 .INPUTS
-
+  None
 .OUTPUTS
-
+  None
 .NOTES
   Version:        1.0
   Author:         Bart Jacobs - @Cloudsparkle
-  Creation Date:
-  Purpose/Change:
+  Creation Date:  19/07/2021
+  Purpose/Change: Create a launcher for Navision published applications
  .EXAMPLE
   None
 #>
 
-#Function to read config.ini
+# Function to read config.ini
 Function Get-IniContent
 {
     <#
@@ -120,7 +120,7 @@ Function Get-IniContent
 # Get ready for the GUI stuff
 Add-Type -AssemblyName PresentationFramework
 
-#Check if INI file was provided
+# Check if INI file was provided
 if ($PublishedAppIni -eq $null)
 {
   $msgBoxInput = [System.Windows.MessageBox]::Show("No INI-File specified.","Error","OK","Error")
@@ -134,7 +134,7 @@ if ($PublishedAppIni -eq $null)
 
 #Check if INI File exists
 $IniFileExists = Test-Path $PublishedAppIni
-If ($IniFileExists -eq $true)
+If ($IniFileExists)
 {
   #Read inifile
   $IniFile = Get-IniContent $PublishedAppIni
@@ -153,18 +153,6 @@ If ($IniFileExists -eq $true)
     }
   }
 
-  $SplashText = $IniFile["CONFIG"]["SplashText"]
-  if ($SplashText -eq $null)
-  {
-    $SplashText = "Getting ready..."
-  }
-
-  $SplashHeader = $IniFile["CONFIG"]["SplashHeader"]
-  if ($SplashHeader -eq $null)
-  {
-    $SplashHeader = "KTN Launchers"
-  }
-
   $AppCommandLine = $IniFile["LAUNCH"]["AppCommandLine"]
   if ($AppCommandLine -eq $null)
   {
@@ -174,6 +162,21 @@ If ($IniFileExists -eq $true)
       "OK"
       {
         Exit 1
+      }
+    }
+  }
+  Else
+  {
+    $ExeFileExists = Test-Path $AppCommandLine
+    if ($ExeFileExists -eq $false)
+    {
+      $msgBoxInput = [System.Windows.MessageBox]::Show("CommandLine EXE not found.","Error","OK","Error")
+      switch  ($msgBoxInput)
+      {
+        "OK"
+        {
+          Exit 1
+        }
       }
     }
   }
@@ -204,10 +207,44 @@ If ($IniFileExists -eq $true)
     }
   }
 
-  $NAV_NAV_ID = $IniFile["LAUNCH"]["NAV_ID"]
-  if ($NAV_ID -eq $null)
+  $NAV_UseGenericZUP = $IniFile["LAUNCH"]["NAV_UseGenericZUP"]
+  if ($NAV_UseGenericZUP -eq $null)
   {
-    $NAV_ID = 0
+    $NAV_UseGenericZUP = 0
+  }
+  Else
+  {
+    if ($NAV_UseGenericZUP -eq 1)
+    {
+      $NAV_GenericZUP = $IniFile["LAUNCH"]["NAV_GenericZUP"]
+      if ($NAV_GenericZUP -eq $null)
+      {
+        $msgBoxInput = [System.Windows.MessageBox]::Show("Generic ZUP file not found in INI-File.","Error","OK","Error")
+        switch  ($msgBoxInput)
+        {
+          "OK"
+          {
+            Exit 1
+          }
+        }
+      }
+      else
+      {
+        $NAV_GenericZUPFile = $env:ZUPS+"\Generic\"+$NAV_GenericZUP
+        $NAV_GenericZUPFileExists = test-path $NAV_GenericZUPFile
+        if ($NAV_GenericZUPFileExists -eq $false)
+        {
+          $msgBoxInput = [System.Windows.MessageBox]::Show("Generic ZUP file not found.","Error","OK","Error")
+          switch  ($msgBoxInput)
+          {
+            "OK"
+            {
+              Exit 1
+            }
+          }
+        }
+      }
+    }
   }
 
   $NAV_NTAUT = $IniFile["LAUNCH"]["NAV_NTAUT"]
@@ -236,9 +273,14 @@ Else
 }
 
 # Initialize variables
-
-#$AppCommandLine = "c:\NAV\finsqlr2.bat"
-#$AppCommandLineArgs = '"SERVERNAME=L-EMEA-SQLPOTH2,database=NAV_O_SADBEL,ID=%ZUPFILES%\POTH2\BE-KI Sadbel - %USERNAME%.ZUP,ntauthentication=0,company=KLS -KTN Logistic Systems"'
+if ($NAV_UseGenericZUP -eq 0)
+{
+  $NAV_ID = $env:ZUPS+"\"+$NAV_ServerName+"\"+$env:username+".zup"
+}
+else
+{
+  $NAV_ID = $NAV_GenericZUPFile
+}
 
 $currentDir = [System.AppDomain]::CurrentDomain.BaseDirectory.TrimEnd('\')
 if ($currentDir -eq $PSHOME.TrimEnd('\'))
@@ -325,7 +367,7 @@ $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
 $Pwshell.EndInvoke($handle) | Out-Null
 $runspace.Close() | Out-Null
 
-$NAV_ID = $env:ZUPS+"\"+$env:username+".zup"
+
 
 if ($NAV_Company -eq 0)
 {
