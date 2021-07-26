@@ -5,7 +5,7 @@ param ($PublishedAppIni)
 .DESCRIPTION
   Starts Navision based on parameters in a defined INI-file
 .PARAMETER PublishedAppIni
-  Ini file name0
+  Ini file name
 .INPUTS
   None
 .OUTPUTS
@@ -131,6 +131,7 @@ if ($PublishedAppIni -eq $null)
       Exit 1
     }
   }
+}
 
 #Check if INI File exists
 $IniFileExists = Test-Path $PublishedAppIni
@@ -321,7 +322,7 @@ $xml = [xml]@"
 
 		<Grid Grid.Row="0" x:Name="Header" >
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="20,10,0,0">
-				<Label Content="KTN Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
+				<Label Content="KTN App Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
 			</StackPanel>
 		</Grid>
         <Grid Grid.Row="1" >
@@ -367,16 +368,14 @@ $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
 $Pwshell.EndInvoke($handle) | Out-Null
 $runspace.Close() | Out-Null
 
-
-
 if ($NAV_Company -eq 0)
 {
-  $AppCommandLineArgs = " SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+"
+  $AppCommandLineArgs = "SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT
 }
 Else
 {
-  $AppCommandLineArgs = " SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
+  $AppCommandLineArgs = "SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
 }
-#write-host $FullCommand
+
 start-process $AppCommandLine $AppCommandLineArgs
 exit 0
