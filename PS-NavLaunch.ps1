@@ -117,10 +117,26 @@ Function Get-IniContent
         {Write-Verbose "$($MyInvocation.MyCommand.Name):: Function ended"}
 }
 
-#Read inifile
+# Get ready for the GUI stuff
+Add-Type -AssemblyName PresentationFramework
+
+#Check if INI file was provided
+if ($PublishedAppIni -eq $null)
+{
+  $msgBoxInput = [System.Windows.MessageBox]::Show("No INI-File specified.","Error","OK","Error")
+  switch  ($msgBoxInput)
+  {
+    "OK"
+    {
+      Exit 1
+    }
+  }
+
+#Check if INI File exists
 $IniFileExists = Test-Path $PublishedAppIni
 If ($IniFileExists -eq $true)
 {
+  #Read inifile
   $IniFile = Get-IniContent $PublishedAppIni
 
   $WaitForLogonScript = $IniFile["CONFIG"]["WaitForLogonScript"]
@@ -152,19 +168,40 @@ If ($IniFileExists -eq $true)
   $AppCommandLine = $IniFile["LAUNCH"]["AppCommandLine"]
   if ($AppCommandLine -eq $null)
   {
-    $AppCommandLine = ""
+    $msgBoxInput = [System.Windows.MessageBox]::Show("CommandLine not found in INI-File.","Error","OK","Error")
+    switch  ($msgBoxInput)
+    {
+      "OK"
+      {
+        Exit 1
+      }
+    }
   }
 
   $NAV_ServerName = $IniFile["LAUNCH"]["NAV_ServerName"]
   if ($NAV_ServerName -eq $null)
   {
-    $NAV_ServerName = 0
+    $msgBoxInput = [System.Windows.MessageBox]::Show("NAV Databaseserver not found in INI-File.","Error","OK","Error")
+    switch  ($msgBoxInput)
+    {
+      "OK"
+      {
+        Exit 1
+      }
+    }
   }
 
   $NAV_Database = $IniFile["LAUNCH"]["NAV_Database"]
   if ($NAV_Database -eq $null)
   {
-    $NAV_Database = 0
+    $msgBoxInput = [System.Windows.MessageBox]::Show("NAV Database not found in INI-File.","Error","OK","Error")
+    switch  ($msgBoxInput)
+    {
+      "OK"
+      {
+        Exit 1
+      }
+    }
   }
 
   $NAV_NAV_ID = $IniFile["LAUNCH"]["NAV_ID"]
@@ -188,7 +225,14 @@ If ($IniFileExists -eq $true)
 }
 Else
 {
-  # Exit wit error Ini file not found
+  $msgBoxInput = [System.Windows.MessageBox]::Show("Specified INI-File not found.","Error","OK","Error")
+  switch  ($msgBoxInput)
+  {
+    "OK"
+    {
+      Exit 1
+    }
+  }
 }
 
 # Initialize variables
@@ -283,7 +327,14 @@ $runspace.Close() | Out-Null
 
 $NAV_ID = $env:ZUPS+"\"+$env:username+".zup"
 
-$AppCommandLineArgs = " SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
+if ($NAV_Company -eq 0)
+{
+  $AppCommandLineArgs = " SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+"
+}
+Else
+{
+  $AppCommandLineArgs = " SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
+}
 #write-host $FullCommand
 start-process $AppCommandLine $AppCommandLineArgs
 exit 0
