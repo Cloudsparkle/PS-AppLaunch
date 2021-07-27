@@ -276,7 +276,9 @@ Else
 # Initialize variables
 if ($NAV_UseGenericZUP -eq 0)
 {
-  $NAV_ID = $env:ZUPS+"\"+$NAV_ServerName+"\"+$env:username+".zup"
+  #TO DO:
+  $Filename,$Fileextention = $PublishedAppIni.split('.')
+  $NAV_ID = $env:ZUPS+"\"+$NAV_ServerName+"\"+$Filename+" - "+$env:username+".zup"
 }
 else
 {
