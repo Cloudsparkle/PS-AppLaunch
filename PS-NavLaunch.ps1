@@ -277,7 +277,9 @@ Else
 if ($NAV_UseGenericZUP -eq 0)
 {
   #TO DO:
-  $Filename,$Fileextention = $PublishedAppIni.split('.')
+  $INIFile = get-Item -path $PublishedAppIni
+  $Filename,$Fileextension = ($INIfile.name).split('.')
+  write-host $Filename
   $NAV_ID = $env:ZUPS+"\"+$NAV_ServerName+"\"+$Filename+" - "+$env:username+".zup"
 }
 else
@@ -324,7 +326,7 @@ $xml = [xml]@"
 
 		<Grid Grid.Row="0" x:Name="Header" >
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="20,10,0,0">
-				<Label Content="KTN App Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
+				<Label Content="KTN Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
 			</StackPanel>
 		</Grid>
         <Grid Grid.Row="1" >
