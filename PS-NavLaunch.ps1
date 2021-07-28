@@ -208,6 +208,34 @@ If ($IniFileExists)
     }
   }
 
+  $NAV_ZUPPath = $IniFile["LAUNCH"]["NAV_ZUPPath"]
+  if ($NAV_ZUPPath -eq $null)
+  {
+    $msgBoxInput = [System.Windows.MessageBox]::Show("NAV ZUP Path not found in INI-File.","Error","OK","Error")
+    switch  ($msgBoxInput)
+    {
+      "OK"
+      {
+        Exit 1
+      }
+    }
+  }
+  Else
+  {
+    $ZUPPathExists = Test-Path $NAV_ZUPPath
+    if ($ZUPPathExists -eq $false)
+    {
+      $msgBoxInput = [System.Windows.MessageBox]::Show("NAV ZUP Path not found or not accessible.","Error","OK","Error")
+      switch  ($msgBoxInput)
+      {
+        "OK"
+        {
+          Exit 1
+        }
+      }
+    }
+  }
+
   $NAV_UseGenericZUP = $IniFile["LAUNCH"]["NAV_UseGenericZUP"]
   if ($NAV_UseGenericZUP -eq $null)
   {
@@ -280,7 +308,7 @@ if ($NAV_UseGenericZUP -eq 0)
   $INIFile = get-Item -path $PublishedAppIni
   $Filename,$Fileextension = ($INIfile.name).split('.')
   write-host $Filename
-  $NAV_ID = $env:ZUPS+"\"+$NAV_ServerName+"\"+$Filename+" - "+$env:username+".zup"
+  $NAV_ID = $NAV_ZUPPath+"\"+$NAV_ServerName+"\"+$Filename+" - "+$env:username+".zup"
 }
 else
 {
