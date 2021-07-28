@@ -304,10 +304,8 @@ Else
 # Initialize variables
 if ($NAV_UseGenericZUP -eq 0)
 {
-  #TO DO:
   $INIFile = get-Item -path $PublishedAppIni
   $Filename,$Fileextension = ($INIfile.name).split('.')
-  write-host $Filename
   $NAV_ID = $NAV_ZUPPath+"\"+$NAV_ServerName+"\"+$Filename+" - "+$env:username+".zup"
 }
 else
