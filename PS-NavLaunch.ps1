@@ -301,6 +301,77 @@ Else
   }
 }
 
+$NAV_ImportRegFile = $IniFile["LAUNCH"]["NAV_ImportRegFile"]
+if ($NAV_ImportRegFile -eq $null)
+{
+  $NAV_ImportRegFile = 0
+}
+Else
+{
+  if ($NAV_ImportRegFile -eq 1)
+  {
+    $NAV_RegFile = $IniFile["LAUNCH"]["NAV_RegFile"]
+    if ($NAV_RegFile -eq $null)
+    {
+      $msgBoxInput = [System.Windows.MessageBox]::Show("Registry File to import not found in INI-File.","Error","OK","Error")
+      switch  ($msgBoxInput)
+      {
+        "OK"
+        {
+          Exit 1
+        }
+      }
+    }
+    else
+    {
+      $NAV_RegFileExists = test-path $NAV_RegFile
+      if ($NAV_RegFileExists -eq $false)
+      {
+        $msgBoxInput = [System.Windows.MessageBox]::Show("Registry file not found.","Error","OK","Error")
+        switch  ($msgBoxInput)
+        {
+          "OK"
+          {
+            Exit 1
+          }
+        }
+      }
+      else
+      {
+        Invoke-Command {reg import $NAV_RegFile *>&1 | Out-Null}
+      }
+    }
+  }
+}
+
+$NAV_SetRegion = $IniFile["LAUNCH"]["NAV_SetRegion"]
+if ($NAV_SetRegion -eq $null)
+{
+  $NAV_SetRegion = 0
+}
+Else
+{
+  if ($NAV_SetRegion -eq 1)
+  {
+    $NAV_Region = $IniFile["LAUNCH"]["NAV_Region"]
+    if ($NAV_Region -eq $null)
+    {
+      $msgBoxInput = [System.Windows.MessageBox]::Show("Region not found in INI-File.","Error","OK","Error")
+      switch  ($msgBoxInput)
+      {
+        "OK"
+        {
+          Exit 1
+        }
+      }
+    }
+    else
+    {
+      Set-Culture $NAV_Region
+    }
+  }
+}
+
 # Initialize variables
 if ($NAV_UseGenericZUP -eq 0)
 {
