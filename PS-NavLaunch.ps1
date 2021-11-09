@@ -11,7 +11,7 @@ param ($PublishedAppIni)
 .OUTPUTS
   None
 .NOTES
-  Version:        1.0
+  Version:        1.1
   Author:         Bart Jacobs - @Cloudsparkle
   Creation Date:  19/07/2021
   Purpose/Change: Create a launcher for Navision published applications
@@ -288,6 +288,12 @@ If ($IniFileExists)
     $NAV_Company = 0
   }
 
+  $NAV_Temp = $IniFile["LAUNCH"]["NAV_Temp"]
+  if ($NAV_Temp -eq $null)
+  {
+    $NAV_Temp = 0
+  }
+
 }
 Else
 {
@@ -476,6 +482,12 @@ if ($NAV_Company -eq 0)
 Else
 {
   $AppCommandLineArgs = "SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
+}
+
+if ($NAV_Temp -neq 0)
+{
+  $AppCommandLineArgs += ",temppath="+$NAV_Temp
+  write-host $AppCommandLineArgs
 }
 
 start-process $AppCommandLine $AppCommandLineArgs
