@@ -484,7 +484,7 @@ Else
   $AppCommandLineArgs = "SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
 }
 
-if ($NAV_Temp -neq 0)
+if ($NAV_Temp -ne 0)
 {
   $AppCommandLineArgs += ",temppath="+$NAV_Temp
   write-host $AppCommandLineArgs
