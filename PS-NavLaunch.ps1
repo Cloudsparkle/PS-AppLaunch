@@ -145,12 +145,19 @@ If ($IniFileExists)
   {
     $WaitForLogonScript = 0
   }
-  if ($WaitForLogonScript -eq 1)
+  Else
   {
-    $ProcessToCheck = $IniFile["CONFIG"]["WaitForProcess"]
-    if ($ProcessToCheck -eq $null)
+    if ($WaitForLogonScript -eq "")
     {
-      $ProcessToCheck = ""
+      $WaitForLogonScript = 0
+    }
+    if ($WaitForLogonScript -eq 1)
+    {
+      $ProcessToCheck = $IniFile["CONFIG"]["WaitForProcess"]
+      if ($ProcessToCheck -eq $null)
+      {
+        $ProcessToCheck = ""
+      }
     }
   }
 
@@ -281,17 +288,38 @@ If ($IniFileExists)
   {
     $NAV_NTAUT = 0
   }
+  Else
+  {
+    if ($NAV_NTAUT -eq "")
+    {
+      $NAV_NTAUT = 0
+    }
+  }
 
   $NAV_Company = $IniFile["LAUNCH"]["NAV_Company"]
   if ($NAV_Company -eq $null)
   {
     $NAV_Company = 0
   }
+  else
+  {
+    if ($NAV_Company -eq "")
+    {
+      $NAV_Company = 0
+    }
+  }
 
   $NAV_Temp = $IniFile["LAUNCH"]["NAV_Temp"]
   if ($NAV_Temp -eq $null)
   {
     $NAV_Temp = 0
+  }
+  Else
+  {
+    if ($NAV_Temp -eq "")
+    {
+      $NAV_Temp = 0
+    }
   }
 
 }
@@ -487,8 +515,7 @@ Else
 if ($NAV_Temp -ne 0)
 {
   $AppCommandLineArgs += ",temppath="+$NAV_Temp
-  write-host $AppCommandLineArgs
-}
 
+}
 start-process $AppCommandLine $AppCommandLineArgs
 exit 0
