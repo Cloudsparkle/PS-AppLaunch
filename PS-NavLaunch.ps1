@@ -11,7 +11,7 @@ param ($PublishedAppIni)
 .OUTPUTS
   None
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Bart Jacobs - @Cloudsparkle
   Creation Date:  19/07/2021
   Purpose/Change: Create a launcher for Navision published applications
@@ -266,7 +266,7 @@ If ($IniFileExists)
       }
       else
       {
-        $NAV_GenericZUPFile = $env:ZUPS+"\Generic\"+$NAV_GenericZUP
+        $NAV_GenericZUPFile = $NAV_ZUPPath+"\Generic\"+$NAV_GenericZUP
         $NAV_GenericZUPFileExists = test-path $NAV_GenericZUPFile
         if ($NAV_GenericZUPFileExists -eq $false)
         {
