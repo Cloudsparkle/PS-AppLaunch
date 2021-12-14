@@ -360,7 +360,7 @@ $xml = [xml]@"
         <Grid Grid.Row="1" >
 		 	<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5">
 				<Label x:Name = "LoadingLabel" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Margin = "0,0,0,0"/>
-				<Controls:MetroProgressBar IsIndeterminate="True" Foreground="White" HorizontalAlignment="Center" Width="350" Height="20"/>
+				<Controls:MetroProgressBar x:Name = "ProgressBar" IsIndeterminate="True" Foreground="White" HorizontalAlignment="Center" Width="350" Height="20"/>
 			</StackPanel>
         </Grid>
 	</Grid>
@@ -378,10 +378,12 @@ $hash.LoadingLabel.Content = $LoadingLabel
 $hash.LoadingLabel.Foreground = $LoadingForeground
 $hash.WindowSplash = $hash.window.FindName("WindowSplash")
 $hash.WindowSplash.Background = $BackgroundColor
+$hash.ProgressBar = $hash.window.FindName("ProgressBar")
+$hash.ProgressBar.Foreground = $LoadingForeground
 $hash.window.ShowDialog()
 #Background="Red" ShowInTaskbar ="true"
-})
-#}) | Out-Null
+
+}) | Out-Null
 
 # Launching Splash-screen
 $Pwshell.Runspace = $runspace
