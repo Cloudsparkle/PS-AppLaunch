@@ -376,14 +376,12 @@ $hash.TitleLabel.Foreground = $TitleForeground
 $hash.LoadingLabel = $hash.window.FindName("LoadingLabel")
 $hash.LoadingLabel.Content = $LoadingLabel
 $hash.LoadingLabel.Foreground = $LoadingForeground
-$hash.MetroProgressBar = $hash.window.FindName("MetroProgressBar")
-$hash.MetroProgressBar.Foreground = $LoadingForeground
 $hash.WindowSplash = $hash.window.FindName("WindowSplash")
 $hash.WindowSplash.Background = $BackgroundColor
 $hash.window.ShowDialog()
 #Background="Red" ShowInTaskbar ="true"
-
-}) | Out-Null
+})
+#}) | Out-Null
 
 # Launching Splash-screen
 $Pwshell.Runspace = $runspace
