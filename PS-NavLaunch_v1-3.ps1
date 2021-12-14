@@ -1,25 +1,25 @@
 param ($PublishedAppIni)
 <#
 .SYNOPSIS
-
+  Starts Navision with a specific set of parameters
 .DESCRIPTION
-
+  Starts Navision based on parameters in a defined INI-file
 .PARAMETER PublishedAppIni
-
+  Ini file name
 .INPUTS
-
+  None
 .OUTPUTS
-
+  None
 .NOTES
-  Version:        1.0
+  Version:        1.3
   Author:         Bart Jacobs - @Cloudsparkle
-  Creation Date:
-  Purpose/Change:
+  Creation Date:  19/07/2021
+  Purpose/Change: Create a launcher for Navision published applications
  .EXAMPLE
   None
 #>
 
-#Function to read config.ini
+# Function to read config.ini
 Function Get-IniContent
 {
     <#
@@ -120,30 +120,47 @@ Function Get-IniContent
 # Get ready for the GUI stuff
 Add-Type -AssemblyName PresentationFramework
 
-#Read inifile
-$IniFileExists = Test-Path $PublishedAppIni
-If ($IniFileExists -eq $true)
+# Check if INI file was provided
+if ($PublishedAppIni -eq $null)
 {
+  $msgBoxInput = [System.Windows.MessageBox]::Show("No INI-File specified.","Error","OK","Error")
+  switch  ($msgBoxInput)
+  {
+    "OK"
+    {
+      Exit 1
+    }
+  }
+}
+
+#Check if INI File exists
+$IniFileExists = Test-Path $PublishedAppIni
+If ($IniFileExists)
+{
+  #Read inifile
   $IniFile = Get-IniContent $PublishedAppIni
 
   $WaitForLogonScript = $IniFile["CONFIG"]["WaitForLogonScript"]
-  if ($WaitForLogonScript -eq $null)
+  if (($WaitForLogonScript -eq $null) -or ($WaitForLogonScript -eq "")
   {
     $WaitForLogonScript = 0
   }
-  if ($WaitForLogonScript -eq 1)
+  Else
   {
-    $ProcessToCheck = $IniFile["CONFIG"]["WaitForProcess"]
-    if ($ProcessToCheck -eq $null)
+    if ($WaitForLogonScript -eq 1)
     {
-      $ProcessToCheck = ""
+      $ProcessToCheck = $IniFile["CONFIG"]["WaitForProcess"]
+      if ($ProcessToCheck -eq $null)
+      {
+        $ProcessToCheck = ""
+      }
     }
   }
 
-  $AppEXEPath = $IniFile["LAUNCH"]["AppEXEPath"]
-  if ($AppEXEPath -eq $null)
+  $AppCommandLine = $IniFile["LAUNCH"]["AppCommandLine"]
+  if (($AppCommandLine -eq $null) -or ($AppCommandLine -eq "")
   {
-    $msgBoxInput = [System.Windows.MessageBox]::Show("Application EXE Path not found in INI-File.","Error","OK","Error")
+    $msgBoxInput = [System.Windows.MessageBox]::Show("CommandLine not found in INI-File.","Error","OK","Error")
     switch  ($msgBoxInput)
     {
       "OK"
@@ -154,10 +171,10 @@ If ($IniFileExists -eq $true)
   }
   Else
   {
-    $ExeFileExists = Test-Path $AppEXEPath
+    $ExeFileExists = Test-Path $AppCommandLine
     if ($ExeFileExists -eq $false)
     {
-      $msgBoxInput = [System.Windows.MessageBox]::Show("Application EXE not found.","Error","OK","Error")
+      $msgBoxInput = [System.Windows.MessageBox]::Show("CommandLine EXE not found.","Error","OK","Error")
       switch  ($msgBoxInput)
       {
         "OK"
@@ -168,23 +185,111 @@ If ($IniFileExists -eq $true)
     }
   }
 
-  $AppCommandLineArgs = $IniFile["LAUNCH"]["AppCommandLineArgs"]
-  if (($AppCommandLineArgs -eq $null) -or ($AppCommandLineArgs -eq ""))
+  $NAV_ServerName = $IniFile["LAUNCH"]["NAV_ServerName"]
+  if (($NAV_ServerName -eq $null) -or ($NAV_ServerName -eq ""))
   {
-    $AppCommandLineArgs = 0
+    $msgBoxInput = [System.Windows.MessageBox]::Show("NAV Databaseserver not found in INI-File.","Error","OK","Error")
+    switch  ($msgBoxInput)
+    {
+      "OK"
+      {
+        Exit 1
+      }
+    }
   }
 
-  $AppImportRegFile = $IniFile["LAUNCH"]["AppImportRegFile"]
-  if (($AppImportRegFile -eq $null) -or ($AppImportRegFile -eq ""))
+  $NAV_Database = $IniFile["LAUNCH"]["NAV_Database"]
+  if (($NAV_Database -eq $null) -or ($NAV_Database -eq ""))
   {
-    $AppImportRegFile = 0
+    $msgBoxInput = [System.Windows.MessageBox]::Show("NAV Database not found in INI-File.","Error","OK","Error")
+    switch  ($msgBoxInput)
+    {
+      "OK"
+      {
+        Exit 1
+      }
+    }
+  }
+
+  $NAV_ZUPPath = $IniFile["LAUNCH"]["NAV_ZUPPath"]
+  if (($NAV_ZUPPath -eq $null) -or ($NAV_ZUPPath -eq ""))
+  {
+    $msgBoxInput = [System.Windows.MessageBox]::Show("NAV ZUP Path not found in INI-File.","Error","OK","Error")
+    switch  ($msgBoxInput)
+    {
+      "OK"
+      {
+        Exit 1
+      }
+    }
   }
   Else
   {
-    if ($AppImportRegFile -eq 1)
+    $ZUPPathExists = Test-Path $NAV_ZUPPath
+    if ($ZUPPathExists -eq $false)
     {
-      $AppRegFile = $IniFile["LAUNCH"]["AppRegFile"]
-      if (($AppRegFile -eq $null) -or ($AppRegFile -eq ""))
+      $msgBoxInput = [System.Windows.MessageBox]::Show("NAV ZUP Path not found or not accessible.","Error","OK","Error")
+      switch  ($msgBoxInput)
+      {
+        "OK"
+        {
+          Exit 1
+        }
+      }
+    }
+  }
+
+  $NAV_UseGenericZUP = $IniFile["LAUNCH"]["NAV_UseGenericZUP"]
+  if (($NAV_UseGenericZUP -eq $null) -or ($NAV_UseGenericZUP -eq ""))
+  {
+    $NAV_UseGenericZUP = 0
+  }
+  Else
+  {
+    if ($NAV_UseGenericZUP -eq 1)
+    {
+      $NAV_GenericZUP = $IniFile["LAUNCH"]["NAV_GenericZUP"]
+      if (($NAV_GenericZUP -eq $null) -or ($NAV_GenericZUP -eq ""))
+      {
+        $msgBoxInput = [System.Windows.MessageBox]::Show("Generic ZUP filenname not found in INI-File.","Error","OK","Error")
+        switch  ($msgBoxInput)
+        {
+          "OK"
+          {
+            Exit 1
+          }
+        }
+      }
+      else
+      {
+        $NAV_GenericZUPFile = $NAV_ZUPPath+"\Generic\"+$NAV_GenericZUP
+        $NAV_GenericZUPFileExists = test-path $NAV_GenericZUPFile
+        if ($NAV_GenericZUPFileExists -eq $false)
+        {
+          $msgBoxInput = [System.Windows.MessageBox]::Show("Generic ZUP file not found.","Error","OK","Error")
+          switch  ($msgBoxInput)
+          {
+            "OK"
+            {
+              Exit 1
+            }
+          }
+        }
+      }
+    }
+  }
+
+  $NAV_ImportRegFile = $IniFile["LAUNCH"]["NAV_ImportRegFile"]
+  if (($NAV_ImportRegFile -eq $null) -or ($NAV_ImportRegFile -eq $null))
+  {
+    $NAV_ImportRegFile = 0
+  }
+  Else
+  {
+    if ($NAV_ImportRegFile -eq 1)
+    {
+      $NAV_RegFile = $IniFile["LAUNCH"]["NAV_RegFile"]
+      if (($NAV_RegFile -eq $null) -or ($NAV_RegFile -eq ""))
       {
         $msgBoxInput = [System.Windows.MessageBox]::Show("Registry File to import not found in INI-File.","Error","OK","Error")
         switch  ($msgBoxInput)
@@ -197,10 +302,10 @@ If ($IniFileExists -eq $true)
       }
       else
       {
-        $AppRegFileExists = test-path $AppRegFile
-        if ($AppRegFileExists -eq $false)
+        $NAV_RegFileExists = test-path $NAV_RegFile
+        if ($NAV_RegFileExists -eq $false)
         {
-          $msgBoxInput = [System.Windows.MessageBox]::Show("Specified registry file not found.","Error","OK","Error")
+          $msgBoxInput = [System.Windows.MessageBox]::Show("Registry file not found.","Error","OK","Error")
           switch  ($msgBoxInput)
           {
             "OK"
@@ -213,23 +318,23 @@ If ($IniFileExists -eq $true)
     }
     Else
     {
-      $AppImportRegFile = 0
+      $NAV_ImportRegFile = 0
     }
   }
 
-  $AppRunFirst = $IniFile["LAUNCH"]["AppRunFirst"]
-  if (($AppRunFirst -eq $null) -or ($AppRunFirst -eq ""))
+  $NAV_SetRegion = $IniFile["LAUNCH"]["NAV_SetRegion"]
+  if (($NAV_SetRegion -eq $null) -or ($NAV_SetRegion -eq ""))
   {
-    $AppRunFirst = 0
+    $NAV_SetRegion = 0
   }
   Else
   {
-    if ($AppRunFirst -eq 1)
+    if ($NAV_SetRegion -eq 1)
     {
-      $AppRunFirstEXE = $IniFile["LAUNCH"]["AppRunFirstEXE"]
-      if (($AppRunFirstEXE -eq $null) -or ($AppRunFirstEXE -eq ""))
+      $NAV_Region = $IniFile["LAUNCH"]["NAV_Region"]
+      if ($NAV_Region -eq $null) -or ($NAV_Region -eq "")
       {
-        $msgBoxInput = [System.Windows.MessageBox]::Show("Run First Executable not found in INI-File.","Error","OK","Error")
+        $msgBoxInput = [System.Windows.MessageBox]::Show("Region not found in INI-File.","Error","OK","Error")
         switch  ($msgBoxInput)
         {
           "OK"
@@ -240,33 +345,41 @@ If ($IniFileExists -eq $true)
       }
       else
       {
-        $AppRunFirstEXE_Exists = test-path $AppRunFirstEXE
-        if ($AppRegFileExists -eq $false)
-        {
-          $msgBoxInput = [System.Windows.MessageBox]::Show("Specified Run First Executable not found.","Error","OK","Error")
-          switch  ($msgBoxInput)
-          {
-            "OK"
-            {
-              Exit 1
-            }
-          }
-        }
-        else
-        {
-          $AppRunFirstCommandLineArgs = $IniFile["LAUNCH"]["AppRunFirstCommandLineArgs"]
-          if (($AppRunFirstCommandLineArgs -eq $null) -or ($AppRunFirstCommandLineArgs -eq ""))
-          {
-            $AppRunFirstCommandLineArgs = 0
-          }
-        }
+
       }
     }
-    Else
-    {
-      $AppRunFirst = 0
-    }
   }
+
+  # Initialize variables
+  if ($NAV_UseGenericZUP -eq 0)
+  {
+    $INIFile = get-Item -path $PublishedAppIni
+    $Filename,$Fileextension = ($INIfile.name).split('.')
+    $NAV_ID = $NAV_ZUPPath+"\"+$NAV_ServerName+"\"+$Filename+" - "+$env:username+".zup"
+  }
+  else
+  {
+    $NAV_ID = $NAV_GenericZUPFile
+  }
+
+  $NAV_NTAUT = $IniFile["LAUNCH"]["NAV_NTAUT"]
+  if (($NAV_NTAUT -eq $null) -or ($NAV_NTAUT -eq ""))
+  {
+    $NAV_NTAUT = 0
+  }
+
+  $NAV_Company = $IniFile["LAUNCH"]["NAV_Company"]
+  if (($NAV_Company -eq $null) -or ($NAV_Company -eq ""))
+  {
+    $NAV_Company = 0
+  }
+
+  $NAV_Temp = $IniFile["LAUNCH"]["NAV_Temp"]
+  if (($NAV_Temp -eq $null) -or ($NAV_Temp -eq ""))
+  {
+    $NAV_Temp = 0
+  }
+
 }
 Else
 {
@@ -280,7 +393,6 @@ Else
   }
 }
 
-# Initialize variables
 $currentDir = [System.AppDomain]::CurrentDomain.BaseDirectory.TrimEnd('\')
 if ($currentDir -eq $PSHOME.TrimEnd('\'))
 {
@@ -320,7 +432,7 @@ $xml = [xml]@"
 
 		<Grid Grid.Row="0" x:Name="Header" >
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="20,10,0,0">
-				<Label Content="CTX Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
+				<Label Content="KTN Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
 			</StackPanel>
 		</Grid>
         <Grid Grid.Row="1" >
@@ -348,19 +460,6 @@ $script:handle = $Pwshell.BeginInvoke()
 #Without 5 seconds of sleep, errors are thrown at closure
 sleep 5
 
-if ($AppRunFirst -eq 1)
-{
-  if ($AppRunFirstCommandLineArgs -eq "0")
-  {
-    start-process $AppRunFirstEXE
-    sleep 2
-  }
-  else
-  {
-    start-process $AppRunFirstEXE $AppRunFirstCommandLineArgs
-  }
-}
-
 if ($WaitForLogonScript -eq 1)
   {
     while ($true)
@@ -371,12 +470,16 @@ if ($WaitForLogonScript -eq 1)
         break
       }
     }
-
   }
 
-if ($AppImportRegFile -eq 1)
+if ($NAV_ImportRegFile eq 1)
 {
   Invoke-Command {reg import $NAV_RegFile *>&1 | Out-Null}
+}
+
+if ($NAV_SetRegion -eq 1)
+{
+  Set-Culture $NAV_Region
 }
 
 # Closing splash-screen
@@ -384,12 +487,19 @@ $hash.window.Dispatcher.Invoke("Normal",[action]{ $hash.window.close() })
 $Pwshell.EndInvoke($handle) | Out-Null
 $runspace.Close() | Out-Null
 
-if ($AppCommandLineArgs -eq "0")
+if ($NAV_Company -eq 0)
 {
-  start-process $AppEXEPath
+  $AppCommandLineArgs = "SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT
 }
 Else
 {
-  start-process $AppEXEPath $AppCommandLineArgs
+  $AppCommandLineArgs = "SERVERNAME="+$NAV_ServerName+",database="+$NAV_Database+",ID="+$NAV_ID+",ntauthentication="+$NAV_NTAUT+",company="+$NAV_Company
 }
+
+if ($NAV_Temp -ne 0)
+{
+  $AppCommandLineArgs += ",temppath="+$NAV_Temp
+
+}
+start-process $AppCommandLine $AppCommandLineArgs
 exit 0
