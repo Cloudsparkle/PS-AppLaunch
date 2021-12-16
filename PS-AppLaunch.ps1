@@ -1,20 +1,25 @@
 param ($PublishedAppIni)
 <#
 .SYNOPSIS
-
+Starts a published application with specific parameters and options
 .DESCRIPTION
-
-.PARAMETER PublishedAppIni
-
+A feature rich framework for launching published applications. Features include:
+  - Customizable SplashScreen
+  - Import a registry file at launch,
+  - Wait for a configurable logonscript process to finish before launching main application
+  - Run another EXE prior to launching the main application
+  - Option to wait for that other EXE to finish before launching the main application
+  .PARAMETER PublishedAppIni
+Full path to the INI file used to define all options
 .INPUTS
-
+Ini file
 .OUTPUTS
-
+None
 .NOTES
   Version:        1.0
   Author:         Bart Jacobs - @Cloudsparkle
-  Creation Date:
-  Purpose/Change:
+  Creation Date:  16/12/2021
+  Purpose/Change: Published Application Framework
  .EXAMPLE
   None
 #>
@@ -130,12 +135,15 @@ If ($IniFileExists -eq $true)
   {
     $WaitForLogonScript = 0
   }
+
   if ($WaitForLogonScript -eq 1)
   {
-    $ProcessToCheck = $IniFile["CONFIG"]["WaitForProcess"]
-    if ($ProcessToCheck -eq $null)
+    $LogonProcessToCheck = $IniFile["CONFIG"]["WaitForLogonProcess"]
+    if (($LogonProcessToCheck -eq $null) -or ($LogonProcessToCheck -eq ""))
     {
-      $ProcessToCheck = ""
+      # LogonProcessToCheck not found or empty in INI file -> disable WaitForLogonScript
+      $WaitForLogonScript = 0
+
     }
   }
 
@@ -288,6 +296,19 @@ If ($IniFileExists -eq $true)
           {
             $AppRunFirstCommandLineArgs = 0
           }
+
+          $WaitForAppRunFirstEXE = $IniFile["CONFIG"]["WaitForAppRunFirstEXE"]
+          if (($WaitForAppRunFirstEXE -eq $null) -or ($WaitForAppRunFirstEXE -eq ""))
+          {
+            $WaitForAppRunFirstEXE = 0
+          }
+          if ($WaitForAppRunFirstEXE -eq 1)
+          {
+            # Derive the processname from AppRunFirstEXE
+            $RunFirstEXESplit1 = $AppRunFirstEXE.split("\")
+            $RunFirstEXESplit2 = ($RunFirstEXESplit1[-1]).split(".")
+            $EXEProcessToCheck = $RunFirstEXESplit2[0]
+          }
         }
       }
     }
@@ -381,7 +402,6 @@ $hash.WindowSplash.Background = $BackgroundColor
 $hash.ProgressBar = $hash.window.FindName("ProgressBar")
 $hash.ProgressBar.Foreground = $LoadingForeground
 $hash.window.ShowDialog()
-#Background="Red" ShowInTaskbar ="true"
 
 }) | Out-Null
 
@@ -404,18 +424,29 @@ if ($AppRunFirst -eq 1)
   }
 }
 
-if ($WaitForLogonScript -eq 1)
+if ($WaitForAppRunFirstEXE -eq 1)
+{
+  while ($true)
   {
-    while ($true)
+    $EXEProcessCheck = Get-Process | Where-Object { $_.Name -eq $EXEProcessToCheck}
+    if ($EXEProcessCheck -eq $null)
     {
-      $ProcessCheck = Get-Process | Where-Object { $_.Name -eq $ProcessToCheck }
-      if ($ProcessCheck -eq $null)
-      {
-        break
-      }
+      break
     }
-
   }
+}
+
+if ($WaitForLogonScript -eq 1)
+{
+  while ($true)
+  {
+    $LogonProcessCheck = Get-Process | Where-Object { $_.Name -eq $LogonProcessToCheck }
+    if ($LogonProcessCheck -eq $null)
+    {
+      break
+    }
+  }
+}
 
 if ($AppImportRegFile -eq 1)
 {

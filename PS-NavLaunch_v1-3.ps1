@@ -140,6 +140,36 @@ If ($IniFileExists)
   #Read inifile
   $IniFile = Get-IniContent $PublishedAppIni
 
+  $TitleLabel = $IniFile["CONFIG"]["TitleLabel"]
+  if (($TitleLabel -eq $null) -or ($TitleLabel -eq ""))
+  {
+    $TitleLabel = "App Launcher"
+  }
+
+  $TitleForeground = $IniFile["CONFIG"]["TitleForeground"]
+  if (($TitleForeground -eq $null) -or ($TitleForeground -eq ""))
+  {
+    $TitleForeground = "White"
+  }
+
+  $LoadingLabel = $IniFile["CONFIG"]["LoadingLabel"]
+  if (($LoadingLabel -eq $null) -or ($LoadingLabel -eq ""))
+  {
+    $LoadingLabel = "Getting Ready"
+  }
+
+  $LoadingForeground = $IniFile["CONFIG"]["LoadingForeground"]
+  if (($LoadingForeground -eq $null) -or ($LoadingForeground -eq ""))
+  {
+    $LoadingForeground = "White"
+  }
+
+  $BackgroundColor = $IniFile["CONFIG"]["BackgroundColor"]
+  if (($BackgroundColor -eq $null) -or ($BackgroundColor -eq ""))
+  {
+    $BackgroundColor = "Red"
+  }
+
   $WaitForLogonScript = $IniFile["CONFIG"]["WaitForLogonScript"]
   if (($WaitForLogonScript -eq $null) -or ($WaitForLogonScript -eq "")
   {
@@ -412,6 +442,11 @@ $runspace.ApartmentState = "STA"
 $runspace.ThreadOptions = "ReuseThread"
 $runspace.Open()
 $runspace.SessionStateProxy.SetVariable("hash",$hash)
+$runspace.SessionStateProxy.SetVariable("TitleLabel",$TitleLabel)
+$runspace.SessionStateProxy.SetVariable("TitleForeground",$TitleForeground)
+$runspace.SessionStateProxy.SetVariable("LoadingLabel",$LoadingLabel)
+$runspace.SessionStateProxy.SetVariable("LoadingForeground",$LoadingForeground)
+$runspace.SessionStateProxy.SetVariable("BackgroundColor",$BackgroundColor)
 $Pwshell = [PowerShell]::Create()
 
 $Pwshell.AddScript({
@@ -420,8 +455,8 @@ $xml = [xml]@"
 	xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	x:Name="WindowSplash" Title="SplashScreen" WindowStyle="None" WindowStartupLocation="CenterScreen"
-	Background="Red" ShowInTaskbar ="true"
+	Name="WindowSplash" Title="SplashScreen" WindowStyle="None" WindowStartupLocation="CenterScreen"
+	ShowInTaskbar ="true"
 	Width="600" Height="350" ResizeMode = "NoResize" >
 
 	<Grid>
@@ -432,13 +467,13 @@ $xml = [xml]@"
 
 		<Grid Grid.Row="0" x:Name="Header" >
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="20,10,0,0">
-				<Label Content="KTN Launcher" Margin="0,0,0,0" Foreground="White" Height="50"  FontSize="30"/>
+		    <Label x:Name = "TitleLabel" Margin="0,0,0,0" Height="50"  FontSize="30"/>
 			</StackPanel>
 		</Grid>
         <Grid Grid.Row="1" >
 		 	<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,5,5,5">
-				<Label x:Name = "LoadingLabel"  Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Margin = "0,0,0,0"/>
-				<Controls:MetroProgressBar IsIndeterminate="True" Foreground="White" HorizontalAlignment="Center" Width="350" Height="20"/>
+				<Label x:Name = "LoadingLabel" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Margin = "0,0,0,0"/>
+				<Controls:MetroProgressBar x:Name = "ProgressBar" IsIndeterminate="True" Foreground="White" HorizontalAlignment="Center" Width="350" Height="20"/>
 			</StackPanel>
         </Grid>
 	</Grid>
@@ -448,8 +483,16 @@ $xml = [xml]@"
 
 $reader = New-Object System.Xml.XmlNodeReader $xml
 $hash.window = [Windows.Markup.XamlReader]::Load($reader)
+$hash.TitleLabel = $hash.window.FindName("TitleLabel")
+$hash.TitleLabel.Content = $TitleLabel
+$hash.TitleLabel.Foreground = $TitleForeground
 $hash.LoadingLabel = $hash.window.FindName("LoadingLabel")
-$hash.LoadingLabel.Content= "Getting ready..."
+$hash.LoadingLabel.Content = $LoadingLabel
+$hash.LoadingLabel.Foreground = $LoadingForeground
+$hash.WindowSplash = $hash.window.FindName("WindowSplash")
+$hash.WindowSplash.Background = $BackgroundColor
+$hash.ProgressBar = $hash.window.FindName("ProgressBar")
+$hash.ProgressBar.Foreground = $LoadingForeground
 $hash.window.ShowDialog()
 
 }) | Out-Null
