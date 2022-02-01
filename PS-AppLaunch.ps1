@@ -9,7 +9,7 @@ A feature rich framework for launching published applications. Features include:
   - Wait for a configurable logonscript process to finish before launching main application
   - Run another EXE prior to launching the main application
   - Option to wait for that other EXE to finish before launching the main application
-  .PARAMETER PublishedAppIni
+.PARAMETER PublishedAppIni
 Full path to the INI file used to define all options
 .INPUTS
 Ini file
