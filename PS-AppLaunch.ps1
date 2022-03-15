@@ -143,7 +143,6 @@ If ($IniFileExists -eq $true)
     {
       # LogonProcessToCheck not found or empty in INI file -> disable WaitForLogonScript
       $WaitForLogonScript = 0
-
     }
   }
 
