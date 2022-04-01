@@ -277,7 +277,7 @@ If ($IniFileExists -eq $true)
       else
       {
         $AppRunFirstEXE_Exists = test-path $AppRunFirstEXE
-        if ($AppRegFileExists -eq $false)
+        if ($AppRunFirstEXE_Exists -eq $false)
         {
           $msgBoxInput = [System.Windows.MessageBox]::Show("Specified Run First Executable not found.","Error","OK","Error")
           switch  ($msgBoxInput)
