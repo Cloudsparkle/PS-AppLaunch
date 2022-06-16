@@ -329,13 +329,13 @@ Else
   }
 }
 
-# Initialize variables
+# Currentdir is the actual running directory
 $currentDir = [System.AppDomain]::CurrentDomain.BaseDirectory.TrimEnd('\')
 if ($currentDir -eq $PSHOME.TrimEnd('\'))
 {
   $currentDir = $PSScriptRoot
 }
-# Currentdir is the actual running directory
+
 
 # Load libraries
 [System.Reflection.Assembly]::LoadWithPartialName('presentationframework') | Out-Null
