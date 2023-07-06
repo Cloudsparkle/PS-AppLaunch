@@ -124,6 +124,20 @@ Function Get-IniContent
 
 # Get ready for the GUI stuff
 Add-Type -AssemblyName PresentationFramework
+
+# Check if INI file was provided
+if ($PublishedAppIni -eq $null)
+{
+  $msgBoxInput = [System.Windows.MessageBox]::Show("No INI-File specified.","Error","OK","Error")
+  switch  ($msgBoxInput)
+  {
+    "OK"
+    {
+      Exit 1
+    }
+  }
+}
+
 #Read inifile
 $IniFileExists = Test-Path $PublishedAppIni
 If ($IniFileExists -eq $true)
